@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_PUBLISHER")
-public class PubliesherModel implements Serializable {
+public class PublisherModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
