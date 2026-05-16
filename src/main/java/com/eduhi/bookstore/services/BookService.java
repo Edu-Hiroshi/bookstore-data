@@ -9,6 +9,7 @@ import com.eduhi.bookstore.repositories.PublisherRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,4 +50,9 @@ public class BookService {
 
         return bookRepository.save(book);
     }
+
+    public List<BookModel> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
 }
