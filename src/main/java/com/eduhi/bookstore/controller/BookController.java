@@ -27,6 +27,13 @@ public class BookController {
                 .body(bookService.saveBook(bookRecordDto));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<BookModel> getBookById(@PathVariable UUID id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bookService.getBookById(id));
+    }
+
     @GetMapping
     public ResponseEntity<List<BookModel>> getAllBooks() {
         return ResponseEntity

@@ -52,6 +52,11 @@ public class BookService {
         return bookRepository.save(book);
     }
 
+    public BookModel getBookById(UUID id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+    }
+
     public List<BookModel> getAllBooks() {
         return bookRepository.findAll();
     }
