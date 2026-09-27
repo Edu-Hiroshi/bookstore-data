@@ -7,9 +7,11 @@ import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -56,13 +58,17 @@ public class BookService {
         return bookRepository.findBooksByPublisherId(id);
     }
 
-    public BookModel getBookById(UUID id) {
-        return bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+    public Optional<BookModel> getBookById(UUID id) {
+        return bookRepository.findById(id);
     }
 
     public List<BookModel> getAllBooks() {
         return bookRepository.findAll();
+    }
+
+    public BookModel updateBook(BookModel bookModel, BookRecordDto bookRecordDto) {
+        BeanUtils.copyProperties(bookRecordDto, bookModel);
+        return bookRepository.save(bookModel);
     }
 
     @Transactional
