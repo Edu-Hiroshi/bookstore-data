@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +35,8 @@ public class BookService {
     // - transactional allows for a rollback if a problem happens
     @Transactional
     public BookModel saveBook(BookRecordDto bookRecordDto) {
+        Instant now = Instant.now();
+
         BookModel book = new BookModel();
         book.setTitle(bookRecordDto.title());
         book.setPublisher(publisherRepository
@@ -45,6 +48,9 @@ public class BookService {
                 .stream()
                 .collect(Collectors.toSet())
         );
+        book.setCreated(now);
+        book.setUpdated(now);
+
 
         ReviewModel reviewModel = new ReviewModel();
         reviewModel.setComment(bookRecordDto.reviewComment());
@@ -67,7 +73,20 @@ public class BookService {
     }
 
     public BookModel updateBook(BookModel bookModel, BookRecordDto bookRecordDto) {
-        BeanUtils.copyProperties(bookRecordDto, bookModel);
+        bookModel.setTitle(bookRecordDto.title());
+        bookModel.setPublisher(publisherRepository
+                .findById(bookRecordDto.publisherId())
+                .get()
+        );
+        bookModel.setAuthors(authorRepository
+                .findAllById(bookRecordDto.authorIds())
+                .stream()
+                .collect(Collectors.toSet())
+        );
+        bookModel.setUpdated(Instant.now());
+
+        // BeanUtils.copyProperties(bookRecordDto, bookModel);
+
         return bookRepository.save(bookModel);
     }
 

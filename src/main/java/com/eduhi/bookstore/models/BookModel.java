@@ -2,6 +2,7 @@ package com.eduhi.bookstore.models;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -34,6 +35,12 @@ public class BookModel implements Serializable{
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL)
     private ReviewModel review;
+
+    @Column(updatable = false, nullable = false)
+    private Instant created;
+
+    @Column(nullable = false)
+    private Instant updated;
 
 
     public UUID getId() {
@@ -74,5 +81,21 @@ public class BookModel implements Serializable{
 
     public void setReview(ReviewModel review) {
         this.review = review;
+    }
+
+    public Instant getCreated() {
+        return created;
+    }
+
+    public void setCreated(Instant created) {
+        this.created = created;
+    }
+
+    public Instant getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Instant updated) {
+        this.updated = updated;
     }
 }
