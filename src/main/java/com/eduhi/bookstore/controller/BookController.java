@@ -29,8 +29,8 @@ public class BookController {
                 .body(bookService.saveBook(bookRecordDto));
     }
 
-    @GetMapping("/book_id/{id}")
-    public ResponseEntity<Object> getBookById(@PathVariable UUID id) {
+    @GetMapping("/")
+    public ResponseEntity<Object> getBookById(@RequestParam(value = "book-id") UUID id) {
         Optional<BookModel> bookModelOptional = bookService.getBookById(id);
         if (bookModelOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found.");
