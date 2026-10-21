@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -97,5 +98,30 @@ public class BookModel implements Serializable{
 
     public void setUpdated(Instant updated) {
         this.updated = updated;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        BookModel bookModel = (BookModel) o;
+        return Objects.equals(id, bookModel.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public String toString() {
+        return "BookModel{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", publisher=" + publisher +
+                ", authors=" + authors +
+                ", review=" + review +
+                ", created=" + created +
+                ", updated=" + updated +
+                '}';
     }
 }
