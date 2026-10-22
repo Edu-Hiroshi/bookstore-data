@@ -1,7 +1,10 @@
 package com.eduhi.bookstore.services;
 
 import com.eduhi.bookstore.dto.BookRecordDto;
+import com.eduhi.bookstore.exception.NotFoundException;
+import com.eduhi.bookstore.models.AuthorModel;
 import com.eduhi.bookstore.models.BookModel;
+import com.eduhi.bookstore.models.PublisherModel;
 import com.eduhi.bookstore.models.ReviewModel;
 import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
@@ -11,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,23 +38,21 @@ public class BookService {
     // - set the information needed to create a book in the database (publisher, author, etc.)
     // - transactional allows for a rollback if a problem happens
     @Transactional
-    public BookModel saveBook(BookRecordDto bookRecordDto) {
+    public BookModel saveBook(BookRecordDto bookRecordDto) throws NotFoundException {
+        PublisherModel publisher = publisherRepository
+                .findById(bookRecordDto.publisherId())
+                .orElseThrow(() -> new NotFoundException("Publisher not found."));
+        HashSet<AuthorModel> author = new HashSet<>(authorRepository
+                .findAllById(bookRecordDto.authorIds()));
+
         Instant now = Instant.now();
 
         BookModel book = new BookModel();
         book.setTitle(bookRecordDto.title());
-        book.setPublisher(publisherRepository
-                .findById(bookRecordDto.publisherId())
-                .get()
-        );
-        book.setAuthors(authorRepository
-                .findAllById(bookRecordDto.authorIds())
-                .stream()
-                .collect(Collectors.toSet())
-        );
+        book.setPublisher(publisher);
+        book.setAuthors(author);
         book.setCreated(now);
         book.setUpdated(now);
-
 
         ReviewModel reviewModel = new ReviewModel();
         reviewModel.setComment(bookRecordDto.reviewComment());
@@ -64,25 +66,26 @@ public class BookService {
         return bookRepository.findBooksByPublisherId(id);
     }
 
-    public Optional<BookModel> getBookById(UUID id) {
-        return bookRepository.findById(id);
+    public BookModel getBookById(UUID id) throws NotFoundException {
+        return bookRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Book not found."));
     }
 
     public List<BookModel> getAllBooks() {
         return bookRepository.findAll();
     }
 
-    public BookModel updateBook(BookModel bookModel, BookRecordDto bookRecordDto) {
-        bookModel.setTitle(bookRecordDto.title());
-        bookModel.setPublisher(publisherRepository
+    public BookModel updateBook(BookModel bookModel, BookRecordDto bookRecordDto) throws NotFoundException {
+        PublisherModel publisher = publisherRepository
                 .findById(bookRecordDto.publisherId())
-                .get()
-        );
-        bookModel.setAuthors(authorRepository
-                .findAllById(bookRecordDto.authorIds())
-                .stream()
-                .collect(Collectors.toSet())
-        );
+                .orElseThrow(() -> new NotFoundException("Publisher not found."));
+        HashSet<AuthorModel> author = new HashSet<>(authorRepository
+                .findAllById(bookRecordDto.authorIds()));
+
+        bookModel.setTitle(bookRecordDto.title());
+        bookModel.setPublisher(publisher);
+        bookModel.setAuthors(author);
         bookModel.setUpdated(Instant.now());
 
         // BeanUtils.copyProperties(bookRecordDto, bookModel);

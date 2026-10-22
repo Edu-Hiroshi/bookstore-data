@@ -1,6 +1,7 @@
 package com.eduhi.bookstore.controller;
 
 import com.eduhi.bookstore.dto.BookRecordDto;
+import com.eduhi.bookstore.exception.NotFoundException;
 import com.eduhi.bookstore.models.BookModel;
 import com.eduhi.bookstore.services.BookService;
 import jakarta.validation.Valid;
@@ -9,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -23,19 +23,17 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookModel> saveBook (@RequestBody @Valid BookRecordDto bookRecordDto) {
+    public ResponseEntity<BookModel> saveBook (@RequestBody @Valid BookRecordDto bookRecordDto) throws NotFoundException {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(bookService.saveBook(bookRecordDto));
     }
 
     @GetMapping("/")
-    public ResponseEntity<Object> getBookById(@RequestParam(value = "book-id") UUID id) {
-        Optional<BookModel> bookModelOptional = bookService.getBookById(id);
-        if (bookModelOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found.");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(bookModelOptional.get());
+    public ResponseEntity<BookModel> getBookById(@RequestParam(value = "book-id") UUID id) throws NotFoundException {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bookService.getBookById(id));
     }
 
     @GetMapping("/publisher_id/{id}")
@@ -54,20 +52,21 @@ public class BookController {
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<Object> updateBook(@PathVariable(value = "id") UUID id,
-                                             @RequestBody @Valid BookRecordDto bookRecordDto) {
-        Optional<BookModel> bookModelOptional = bookService.getBookById(id);
-        if (bookModelOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Book not found.");
-        }
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(bookService.updateBook(bookModelOptional.get(), bookRecordDto));
+                                             @RequestBody @Valid BookRecordDto bookRecordDto) throws NotFoundException {
+        BookModel bookModel = bookService.getBookById(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bookService.updateBook(
+                        bookModel,
+                        bookRecordDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable UUID id) {
         bookService.deleteBook(id);
         return ResponseEntity
-                .status(HttpStatus.OK)
+                .status(HttpStatus.NO_CONTENT)
                 .body("Book deleted successfully.");
     }
 }
