@@ -42,4 +42,24 @@ public class PublisherController {
                 .status(HttpStatus.OK)
                 .body(publisherService.getPublisherById(id));
     }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Object> updatePublisher(@PathVariable(value = "id") UUID id,
+                                               @RequestBody @Valid PublisherRecordDto publisherRecordDto) throws NotFoundException {
+        PublisherModel publisherModel = publisherService.getPublisherById(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(publisherService.updatePublisher(
+                        publisherModel,
+                        publisherRecordDto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deletePublisher(@PathVariable UUID id) {
+        publisherService.deletePublisher(id);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .body("Publisher deleted successfully.");
+    }
 }
