@@ -3,6 +3,7 @@ package com.eduhi.bookstore.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -14,6 +15,7 @@ public class PublisherModel implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     @Column(nullable = false, unique = true)
@@ -25,6 +27,24 @@ public class PublisherModel implements Serializable {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToMany(mappedBy = "publisher", fetch = FetchType.LAZY)
     private Set<BookModel> books = new HashSet<>();
+
+    @Column(updatable = false, nullable = false)
+    private Instant created;
+
+    @Column(nullable = false)
+    private Instant updated;
+
+
+    public PublisherModel() {
+    }
+
+    public PublisherModel(UUID id, String name, Set<BookModel> books, Instant created, Instant updated) {
+        this.id = id;
+        this.name = name;
+        this.books = books;
+        this.created = created;
+        this.updated = updated;
+    }
 
     public String getName() {
         return name;
@@ -48,5 +68,21 @@ public class PublisherModel implements Serializable {
 
     public void setBooks(Set<BookModel> books) {
         this.books = books;
+    }
+
+    public Instant getCreated() {
+        return created;
+    }
+
+    public void setCreated(Instant created) {
+        this.created = created;
+    }
+
+    public Instant getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(Instant updated) {
+        this.updated = updated;
     }
 }
