@@ -9,6 +9,9 @@ import java.util.UUID;
 public record AuthorRecordDto(
         @NotBlank
         @Size(max = 150)
-        String name
+        String name,
+
+        // TODO: add validation to Set<UUID>
+        Set<UUID> bookIds
 ) {
 }
