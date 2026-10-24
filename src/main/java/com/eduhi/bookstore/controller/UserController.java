@@ -24,6 +24,8 @@ public class UserController {
 
     @PostMapping("/users")
     public ResponseEntity<UserModel> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
+
+        // TODO: move logic to service layer
         var userModel = new UserModel();
         BeanUtils.copyProperties(userRecordDto, userModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userModel));
