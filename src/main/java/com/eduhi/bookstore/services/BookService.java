@@ -10,15 +10,10 @@ import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class BookService {
@@ -80,15 +75,29 @@ public class BookService {
         PublisherModel publisher = publisherRepository
                 .findById(bookRecordDto.publisherId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found."));
-        HashSet<AuthorModel> author = new HashSet<>(authorRepository
+        HashSet<AuthorModel> authors = new HashSet<>(authorRepository
                 .findAllById(bookRecordDto.authorIds()));
 
         bookModel.setTitle(bookRecordDto.title());
         bookModel.setPublisher(publisher);
-        bookModel.setAuthors(author);
+        bookModel.setAuthors(authors);
         bookModel.setUpdated(Instant.now());
 
-        // BeanUtils.copyProperties(bookRecordDto, bookModel);
+        //TODO: add logic to remove books from authors and publishers
+
+        for (AuthorModel author : authors){
+            Set<BookModel> authorBooks = author.getBooks();
+            authorBooks.add(bookModel);
+            author.setBooks(authorBooks);
+            author.setUpdated(Instant.now());
+            authorRepository.save(author);
+        }
+
+        Set<BookModel> publisherBooks = publisher.getBooks();
+        publisherBooks.add(bookModel);
+        publisher.setBooks(publisherBooks);
+        publisher.setUpdated(Instant.now());
+        publisherRepository.save(publisher);
 
         return bookRepository.save(bookModel);
     }
