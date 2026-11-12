@@ -48,24 +48,53 @@ public class PublisherService {
     }
 
 
-    public PublisherModel updatePublisher(PublisherModel publisherModel, PublisherRecordDto publisherRecordDto) {
-        List<BookModel> bookList = bookRepository.findAllById(publisherRecordDto.bookIds());
-        Set<BookModel> books = new HashSet<BookModel>(bookList);
+    @Transactional
+    public PublisherModel updatePublisher(UUID id, PublisherRecordDto publisherRecordDto) throws NotFoundException {
+        // get previous IDs of books by the publisher
+        PublisherModel publisherModel = publisherRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Publisher not found."));
+        Set<BookModel> affectedBooks = new HashSet<>(publisherModel.getBooks());
+
+        // get updated IDs of books by the publisher
+        Set<UUID> requestedBookIds = publisherRecordDto.bookIds() == null
+                ? Set.of()
+                : publisherRecordDto.bookIds();
+        Set<BookModel> requestedBooks = new HashSet<>(bookRepository.findAllById(requestedBookIds));
+
+        affectedBooks.addAll(requestedBooks);
 
         publisherModel.setName(publisherRecordDto.name());
-        publisherModel.setBooks(books);
-        publisherModel.setUpdated(Instant.now());
+        publisherModel.setBooks(requestedBooks);
+        Instant now = Instant.now();
 
-        //TODO: add logic to remove publishing
+        // updates publisher data of individual books to add or remove publisher
+        for (BookModel book : affectedBooks) {
+            PublisherModel previousPublisher = book.getPublisher();
 
-        for (BookModel book : bookList) {
-            PublisherModel publisher = book.getPublisher();
-            book.setPublisher(publisher);
-            book.setUpdated(Instant.now());
-            bookRepository.save(book);
+            // adds updated publisher to books if previously different or null
+            if (requestedBooks.contains(book)) {
+                if (previousPublisher == null ||
+                    !previousPublisher.getId().equals(publisherModel.getId())) {
+
+                    if (previousPublisher != null) {
+                        previousPublisher.getBooks().remove(book);
+                    }
+
+                    book.setPublisher(publisherModel);
+                    book.setUpdated(now);
+                }
+
+            // removes outdated publisher from book
+            } else if (previousPublisher != null &&
+                       previousPublisher.getId().equals(publisherModel.getId())) {
+
+                book.setPublisher(null);
+                book.setUpdated(now);
+            }
         }
 
-        return publisherRepository.save(publisherModel);
+        return publisherModel;
     }
 
     @Transactional

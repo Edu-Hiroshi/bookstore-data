@@ -46,12 +46,10 @@ public class PublisherController {
     @PutMapping(value = "/{id}")
     public ResponseEntity<Object> updatePublisher(@PathVariable(value = "id") UUID id,
                                                @RequestBody @Valid PublisherRecordDto publisherRecordDto) throws NotFoundException {
-        PublisherModel publisherModel = publisherService.getPublisherById(id);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(publisherService.updatePublisher(
-                        publisherModel,
+                        id,
                         publisherRecordDto));
     }
 
