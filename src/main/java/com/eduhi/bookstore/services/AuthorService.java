@@ -47,24 +47,40 @@ public class AuthorService {
         return authorRepository.save(author);
     }
 
-    public AuthorModel updateAuthor(AuthorModel authorModel, AuthorRecordDto authorRecordDto) {
-        List<BookModel> bookList = bookRepository.findAllById(authorRecordDto.bookIds());
-        Set<BookModel> books = new HashSet<BookModel>(bookList);
+    @Transactional
+    public AuthorModel updateAuthor(UUID id, AuthorRecordDto authorRecordDto) throws NotFoundException {
+        // get previous IDs of books by the author
+        AuthorModel authorModel = authorRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Author not found."));
+        Set<BookModel> affectedBooks = new HashSet<>(authorModel.getBooks());
+
+        // get updated IDs of books by the author
+        Set<UUID> requestedBookIds = authorRecordDto.bookIds() == null
+                ? Set.of()
+                : authorRecordDto.bookIds();
+        Set<BookModel> requestedBooks = new HashSet<>(bookRepository.findAllById(requestedBookIds));
+
+        affectedBooks.addAll(requestedBooks);
 
         authorModel.setName(authorRecordDto.name());
-        authorModel.setBooks(books);
-        authorModel.setUpdated(Instant.now());
+        authorModel.setBooks(requestedBooks);
+        Instant now = Instant.now();
+        authorModel.setUpdated(now);
 
-        //TODO: add logic to remove authorship
-
-        for (BookModel book : bookList) {
-            Set<AuthorModel> authors = book.getAuthors();
-            authors.add(authorModel);
-            book.setAuthors(authors);
-            book.setUpdated(Instant.now());
-            bookRepository.save(book);
+        // updates author data of individual books to add or remove authors
+        for (BookModel book : affectedBooks) {
+            boolean changed;
+            if (requestedBooks.contains(book)) {
+                changed = book.getAuthors().add(authorModel);
+            } else {
+                changed = book.getAuthors().remove(authorModel);
+            }
+            if (changed) {
+                book.setUpdated(now);
+            }
         }
-        return authorRepository.save(authorModel);
+        return authorModel;
     }
 
     @Transactional

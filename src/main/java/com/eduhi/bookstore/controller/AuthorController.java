@@ -46,12 +46,10 @@ public class AuthorController {
     @PutMapping(value = "/{id}")
     public ResponseEntity<Object> updateAuthor(@PathVariable(value = "id") UUID id,
                                                @RequestBody @Valid AuthorRecordDto authorRecordDto) throws NotFoundException {
-        AuthorModel authorModel = authorService.getAuthorById(id);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(authorService.updateAuthor(
-                        authorModel,
+                        id,
                         authorRecordDto));
     }
 
