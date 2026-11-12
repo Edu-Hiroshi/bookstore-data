@@ -34,7 +34,7 @@ public class BookModel implements Serializable{
     )
     private Set<AuthorModel> authors = new HashSet<>();
 
-    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private ReviewModel review;
 
     @Column(updatable = false, nullable = false)

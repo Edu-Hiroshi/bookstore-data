@@ -53,12 +53,10 @@ public class BookController {
     @PutMapping(value = "/{id}")
     public ResponseEntity<Object> updateBook(@PathVariable(value = "id") UUID id,
                                              @RequestBody @Valid BookRecordDto bookRecordDto) throws NotFoundException {
-        BookModel bookModel = bookService.getBookById(id);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.updateBook(
-                        bookModel,
+                        id,
                         bookRecordDto));
     }
 

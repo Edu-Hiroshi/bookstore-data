@@ -30,8 +30,7 @@ public class BookService {
         this.publisherRepository = publisherRepository;
     }
 
-    // - set the information needed to create a book in the database (publisher, author, etc.)
-    // - transactional allows for a rollback if a problem happens
+    // Transactional allows for a rollback if a problem happens while updating models
     @Transactional
     public BookModel saveBook(BookRecordDto bookRecordDto) throws NotFoundException {
         PublisherModel publisher = publisherRepository
@@ -71,35 +70,50 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    public BookModel updateBook(BookModel bookModel, BookRecordDto bookRecordDto) throws NotFoundException {
+    // Updates the publisher and author relationships.
+    // JPA dirty checking persists changes and removals.
+    @Transactional
+    public BookModel updateBook(UUID id, BookRecordDto bookRecordDto) throws NotFoundException {
+        BookModel bookModel = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("Book not found."));
+
         PublisherModel publisher = publisherRepository
                 .findById(bookRecordDto.publisherId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found."));
+
         HashSet<AuthorModel> authors = new HashSet<>(authorRepository
-                .findAllById(bookRecordDto.authorIds()));
+                .findAllById(
+                    bookRecordDto.authorIds() == null
+                        ? Set.of()
+                        : bookRecordDto.authorIds()));
+
+        Instant now = Instant.now();
+
+        // removes book from previous publisher and updates current publisher
+        PublisherModel previousPublisher = bookModel.getPublisher();
+        if (previousPublisher != null &&
+            !previousPublisher.getId().equals(publisher.getId())) {
+            previousPublisher.getBooks().remove(bookModel);
+        }
+        publisher.getBooks().add(bookModel);
+
+        // removes book from previous authors and updates current authors
+        for (AuthorModel previousAuthor : new HashSet<>(bookModel.getAuthors())) {
+            if (!authors.contains(previousAuthor)) {
+                previousAuthor.getBooks().remove(bookModel);
+            }
+        }
+        for (AuthorModel author : authors) {
+            author.getBooks().add(bookModel);
+        }
 
         bookModel.setTitle(bookRecordDto.title());
         bookModel.setPublisher(publisher);
         bookModel.setAuthors(authors);
-        bookModel.setUpdated(Instant.now());
+        bookModel.setUpdated(now);
 
-        //TODO: add logic to remove books from authors and publishers
-
-        for (AuthorModel author : authors){
-            Set<BookModel> authorBooks = author.getBooks();
-            authorBooks.add(bookModel);
-            author.setBooks(authorBooks);
-            author.setUpdated(Instant.now());
-            authorRepository.save(author);
-        }
-
-        Set<BookModel> publisherBooks = publisher.getBooks();
-        publisherBooks.add(bookModel);
-        publisher.setBooks(publisherBooks);
-        publisher.setUpdated(Instant.now());
-        publisherRepository.save(publisher);
-
-        return bookRepository.save(bookModel);
+        return bookModel;
     }
 
     @Transactional
