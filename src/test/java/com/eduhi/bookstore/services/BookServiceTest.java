@@ -47,7 +47,7 @@ class BookServiceTest {
 
     @Test
     @DisplayName("Save book with review")
-    void saveBookBuildsBookAndReviewAndPersistsIt() throws NotFoundException {
+    void saveBookWithReviewAndPersistsIt() throws NotFoundException {
         UUID publisherId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
 
@@ -82,7 +82,7 @@ class BookServiceTest {
 
     @Test
     @DisplayName("[Exception] Save book with non existent publisher")
-    void saveBookThrowsWhenPublisherDoesNotExist() {
+    void saveBookThrowsExceptionWhenPublisherDoesNotExist() {
         UUID publisherId = UUID.randomUUID();
         BookRecordDto record = new BookRecordDto(
                 "A book",
@@ -102,7 +102,7 @@ class BookServiceTest {
 
     @Test
     @DisplayName("Find books by publisher Id")
-    void findBooksByPublisherIdReturnsRepositoryResults() {
+    void findBooksByPublisherIdReturnsResults() {
         UUID publisherId = UUID.randomUUID();
         List<BookModel> books = List.of(new BookModel(), new BookModel());
         when(bookRepository.findBooksByPublisherId(publisherId))
@@ -128,7 +128,7 @@ class BookServiceTest {
 
     @Test
     @DisplayName("[Exception] Get book by Id")
-    void getBookByIdThrowsWhenBookDoesNotExist() {
+    void getBookByIdThrowsExceptionWhenBookDoesNotExist() {
         UUID bookId = UUID.randomUUID();
         when(bookRepository.findById(bookId))
                 .thenReturn(Optional.empty());
@@ -154,16 +154,30 @@ class BookServiceTest {
 
     @Test
     @DisplayName("Updates book and associated publisher & author")
-    void updateBookUpdatesBookAndAssociations() throws NotFoundException {
+    void updateBookUpdatesAssociations() throws NotFoundException {
         UUID publisherId = UUID.randomUUID();
         PublisherModel publisher = new PublisherModel();
+        publisher.setId(publisherId);
+
+        PublisherModel previousPublisher = new PublisherModel();
+        previousPublisher.setId(UUID.randomUUID());
+
         AuthorModel firstAuthor = new AuthorModel();
         AuthorModel secondAuthor = new AuthorModel();
-        BookModel book = new BookModel();
+        AuthorModel previousAuthor = new AuthorModel();
 
+        BookModel book = new BookModel();
+        book.setId(UUID.randomUUID());
         book.setTitle("Old title");
-        Instant previousUpdate = Instant.parse("2020-01-01T00:00:00Z");
+        book.setPublisher(previousPublisher);
+        book.setAuthors(Set.of(previousAuthor));
+
+        previousPublisher.getBooks().add(book);
+        previousAuthor.getBooks().add(book);
+
+        Instant previousUpdate = Instant.parse("2026-11-10T00:00:00Z");
         book.setUpdated(previousUpdate);
+
         BookRecordDto record = new BookRecordDto(
                 "New title",
                 publisherId,
@@ -174,10 +188,10 @@ class BookServiceTest {
                 .thenReturn(Optional.of(publisher));
         when(authorRepository.findAllById(record.authorIds()))
                 .thenReturn(List.of(firstAuthor, secondAuthor));
-        when(bookRepository.save(any(BookModel.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(bookRepository.findById(book.getId()))
+                .thenReturn(Optional.of(book));
 
-        BookModel updatedBook = bookService.updateBook(book, record);
+        BookModel updatedBook = bookService.updateBook(book.getId(), record);
 
         assertSame(book, updatedBook);
         assertEquals("New title", book.getTitle());
@@ -185,18 +199,18 @@ class BookServiceTest {
         assertEquals(Set.of(firstAuthor, secondAuthor), book.getAuthors());
 
         assertTrue(book.getUpdated().isAfter(previousUpdate));
+
         assertTrue(firstAuthor.getBooks().contains(book));
         assertTrue(secondAuthor.getBooks().contains(book));
         assertTrue(publisher.getBooks().contains(book));
 
-        assertNotNull(firstAuthor.getUpdated());
-        assertNotNull(secondAuthor.getUpdated());
-        assertNotNull(publisher.getUpdated());
+        assertTrue(previousAuthor.getBooks().isEmpty());
+        assertTrue(previousPublisher.getBooks().isEmpty());
 
-        verify(authorRepository).save(firstAuthor);
-        verify(authorRepository).save(secondAuthor);
-        verify(publisherRepository).save(publisher);
-        verify(bookRepository).save(book);
+        verify(bookRepository).findById(book.getId());
+        verify(authorRepository, never()).save(any(AuthorModel.class));
+        verify(publisherRepository, never()).save(any(PublisherModel.class));
+        verify(bookRepository, never()).save(any(BookModel.class));
     }
 
     @Test
@@ -204,6 +218,9 @@ class BookServiceTest {
     void updateBookThrowsWhenPublisherDoesNotExistWithoutSaving() {
         UUID publisherId = UUID.randomUUID();
         BookModel book = new BookModel();
+        UUID bookId = UUID.randomUUID();
+        book.setId(bookId);
+
         BookRecordDto record = new BookRecordDto(
                 "New title",
                 publisherId,
@@ -212,10 +229,12 @@ class BookServiceTest {
 
         when(publisherRepository.findById(publisherId))
                 .thenReturn(Optional.empty());
+        when(bookRepository.findById(bookId))
+                .thenReturn(Optional.of(book));
 
         NotFoundException exception = assertThrows(
                 NotFoundException.class,
-                () -> bookService.updateBook(book, record));
+                () -> bookService.updateBook(bookId, record));
 
         assertEquals("Publisher not found.", exception.getMessage());
 
