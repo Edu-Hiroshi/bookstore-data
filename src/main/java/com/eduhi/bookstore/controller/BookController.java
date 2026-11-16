@@ -1,6 +1,7 @@
 package com.eduhi.bookstore.controller;
 
 import com.eduhi.bookstore.dto.BookRecordDto;
+import com.eduhi.bookstore.dto.BooksProjection;
 import com.eduhi.bookstore.exception.NotFoundException;
 import com.eduhi.bookstore.models.BookModel;
 import com.eduhi.bookstore.services.BookService;
@@ -48,6 +49,13 @@ public class BookController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.getAllBooks());
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<BooksProjection>> getAllBooksWithPublisher() {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bookService.getAllBooksWithPublisherAndAuthors());
     }
 
     @PutMapping(value = "/{id}")

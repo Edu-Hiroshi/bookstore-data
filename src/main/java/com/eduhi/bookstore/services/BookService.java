@@ -1,6 +1,7 @@
 package com.eduhi.bookstore.services;
 
 import com.eduhi.bookstore.dto.BookRecordDto;
+import com.eduhi.bookstore.dto.BooksProjection;
 import com.eduhi.bookstore.exception.NotFoundException;
 import com.eduhi.bookstore.models.AuthorModel;
 import com.eduhi.bookstore.models.BookModel;
@@ -68,6 +69,10 @@ public class BookService {
 
     public List<BookModel> getAllBooks() {
         return bookRepository.findAll();
+    }
+
+    public List<BooksProjection> getAllBooksWithPublisherAndAuthors() {
+        return bookRepository.getAllBooksWithPublisherAndAuthors();
     }
 
     // Updates the publisher and author relationships.
