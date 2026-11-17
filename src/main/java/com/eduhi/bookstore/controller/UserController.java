@@ -5,7 +5,6 @@ import com.eduhi.bookstore.models.UserModel;
 import com.eduhi.bookstore.services.UserService;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,10 +23,8 @@ public class UserController {
 
     @PostMapping("/users")
     public ResponseEntity<UserModel> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
-
-        // TODO: move logic to service layer
-        var userModel = new UserModel();
-        BeanUtils.copyProperties(userRecordDto, userModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userModel));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.save(userRecordDto));
     }
 }
