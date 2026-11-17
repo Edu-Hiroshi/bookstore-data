@@ -1,7 +1,7 @@
 package com.eduhi.bookstore.controller;
 
 import com.eduhi.bookstore.dto.UserRecordDto;
-import com.eduhi.bookstore.models.UserModel;
+import com.eduhi.bookstore.models.UserEntity;
 import com.eduhi.bookstore.services.UserService;
 
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<UserModel> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
+    public ResponseEntity<UserEntity> saveUser(@RequestBody @Valid UserRecordDto userRecordDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(userService.save(userRecordDto));

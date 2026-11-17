@@ -3,10 +3,7 @@ package com.eduhi.bookstore.services;
 import com.eduhi.bookstore.dto.BookRecordDto;
 import com.eduhi.bookstore.dto.BooksProjection;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.AuthorModel;
-import com.eduhi.bookstore.models.BookModel;
-import com.eduhi.bookstore.models.PublisherModel;
-import com.eduhi.bookstore.models.ReviewModel;
+import com.eduhi.bookstore.models.*;
 import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
@@ -35,41 +32,41 @@ public class BookService {
 
     // Transactional allows for a rollback if a problem happens while updating models
     @Transactional
-    public BookModel saveBook(BookRecordDto bookRecordDto) throws NotFoundException {
-        PublisherModel publisher = publisherRepository
+    public BookEntity saveBook(BookRecordDto bookRecordDto) throws NotFoundException {
+        PublisherEntity publisher = publisherRepository
                 .findById(bookRecordDto.publisherId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found."));
-        HashSet<AuthorModel> author = new HashSet<>(authorRepository
+        HashSet<AuthorEntity> author = new HashSet<>(authorRepository
                 .findAllById(bookRecordDto.authorIds()));
 
         Instant now = Instant.now();
 
-        BookModel book = new BookModel();
+        BookEntity book = new BookEntity();
         book.setTitle(bookRecordDto.title());
         book.setPublisher(publisher);
         book.setAuthors(author);
         book.setCreated(now);
         book.setUpdated(now);
 
-        ReviewModel reviewModel = new ReviewModel();
-        reviewModel.setComment(bookRecordDto.reviewComment());
-        reviewModel.setBook(book);
-        book.setReview(reviewModel);
+        ReviewEntity reviewEntity = new ReviewEntity();
+        reviewEntity.setComment(bookRecordDto.reviewComment());
+        reviewEntity.setBook(book);
+        book.setReview(reviewEntity);
 
         return bookRepository.save(book);
     }
 
-    public List<BookModel> findBooksByPublisherId(UUID id) {
+    public List<BookEntity> findBooksByPublisherId(UUID id) {
         return bookRepository.findBooksByPublisherId(id);
     }
 
-    public BookModel getBookById(UUID id) throws NotFoundException {
+    public BookEntity getBookById(UUID id) throws NotFoundException {
         return bookRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("Book not found."));
     }
 
-    public List<BookModel> getAllBooks() {
+    public List<BookEntity> getAllBooks() {
         return bookRepository.findAll();
     }
 
@@ -84,16 +81,16 @@ public class BookService {
     // Updates the publisher and author relationships.
     // JPA dirty checking persists changes and removals.
     @Transactional
-    public BookModel updateBook(UUID id, BookRecordDto bookRecordDto) throws NotFoundException {
-        BookModel bookModel = bookRepository
+    public BookEntity updateBook(UUID id, BookRecordDto bookRecordDto) throws NotFoundException {
+        BookEntity bookEntity = bookRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("Book not found."));
 
-        PublisherModel publisher = publisherRepository
+        PublisherEntity publisher = publisherRepository
                 .findById(bookRecordDto.publisherId())
                 .orElseThrow(() -> new NotFoundException("Publisher not found."));
 
-        HashSet<AuthorModel> authors = new HashSet<>(authorRepository
+        HashSet<AuthorEntity> authors = new HashSet<>(authorRepository
                 .findAllById(
                     bookRecordDto.authorIds() == null
                         ? Set.of()
@@ -102,29 +99,29 @@ public class BookService {
         Instant now = Instant.now();
 
         // removes book from previous publisher and updates current publisher
-        PublisherModel previousPublisher = bookModel.getPublisher();
+        PublisherEntity previousPublisher = bookEntity.getPublisher();
         if (previousPublisher != null &&
             !previousPublisher.getId().equals(publisher.getId())) {
-            previousPublisher.getBooks().remove(bookModel);
+            previousPublisher.getBooks().remove(bookEntity);
         }
-        publisher.getBooks().add(bookModel);
+        publisher.getBooks().add(bookEntity);
 
         // removes book from previous authors and updates current authors
-        for (AuthorModel previousAuthor : new HashSet<>(bookModel.getAuthors())) {
+        for (AuthorEntity previousAuthor : new HashSet<>(bookEntity.getAuthors())) {
             if (!authors.contains(previousAuthor)) {
-                previousAuthor.getBooks().remove(bookModel);
+                previousAuthor.getBooks().remove(bookEntity);
             }
         }
-        for (AuthorModel author : authors) {
-            author.getBooks().add(bookModel);
+        for (AuthorEntity author : authors) {
+            author.getBooks().add(bookEntity);
         }
 
-        bookModel.setTitle(bookRecordDto.title());
-        bookModel.setPublisher(publisher);
-        bookModel.setAuthors(authors);
-        bookModel.setUpdated(now);
+        bookEntity.setTitle(bookRecordDto.title());
+        bookEntity.setPublisher(publisher);
+        bookEntity.setAuthors(authors);
+        bookEntity.setUpdated(now);
 
-        return bookModel;
+        return bookEntity;
     }
 
     @Transactional

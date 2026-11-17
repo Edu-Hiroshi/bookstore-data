@@ -2,8 +2,8 @@ package com.eduhi.bookstore.services;
 
 import com.eduhi.bookstore.dto.AuthorRecordDto;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.AuthorModel;
-import com.eduhi.bookstore.models.BookModel;
+import com.eduhi.bookstore.models.AuthorEntity;
+import com.eduhi.bookstore.models.BookEntity;
 import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import jakarta.transaction.Transactional;
@@ -26,20 +26,20 @@ public class AuthorService {
         this.bookRepository = bookRepository;
     }
 
-    public AuthorModel getAuthorById(UUID id) throws NotFoundException {
+    public AuthorEntity getAuthorById(UUID id) throws NotFoundException {
         return authorRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("Author not found."));
     }
 
-    public List<AuthorModel> getAllAuthors() {
+    public List<AuthorEntity> getAllAuthors() {
         return authorRepository.findAll();
     }
 
-    public AuthorModel saveAuthor(AuthorRecordDto authorRecordDto) {
+    public AuthorEntity saveAuthor(AuthorRecordDto authorRecordDto) {
         Instant now = Instant.now();
 
-        AuthorModel author = new AuthorModel();
+        AuthorEntity author = new AuthorEntity();
         author.setName(authorRecordDto.name());
         author.setCreated(now);
         author.setUpdated(now);
@@ -48,39 +48,39 @@ public class AuthorService {
     }
 
     @Transactional
-    public AuthorModel updateAuthor(UUID id, AuthorRecordDto authorRecordDto) throws NotFoundException {
+    public AuthorEntity updateAuthor(UUID id, AuthorRecordDto authorRecordDto) throws NotFoundException {
         // get previous IDs of books by the author
-        AuthorModel authorModel = authorRepository
+        AuthorEntity authorEntity = authorRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("Author not found."));
-        Set<BookModel> affectedBooks = new HashSet<>(authorModel.getBooks());
+        Set<BookEntity> affectedBooks = new HashSet<>(authorEntity.getBooks());
 
         // get updated IDs of books by the author
         Set<UUID> requestedBookIds = authorRecordDto.bookIds() == null
                 ? Set.of()
                 : authorRecordDto.bookIds();
-        Set<BookModel> requestedBooks = new HashSet<>(bookRepository.findAllById(requestedBookIds));
+        Set<BookEntity> requestedBooks = new HashSet<>(bookRepository.findAllById(requestedBookIds));
 
         affectedBooks.addAll(requestedBooks);
 
-        authorModel.setName(authorRecordDto.name());
-        authorModel.setBooks(requestedBooks);
+        authorEntity.setName(authorRecordDto.name());
+        authorEntity.setBooks(requestedBooks);
         Instant now = Instant.now();
-        authorModel.setUpdated(now);
+        authorEntity.setUpdated(now);
 
         // updates author data of individual books to add or remove authors
-        for (BookModel book : affectedBooks) {
+        for (BookEntity book : affectedBooks) {
             boolean changed;
             if (requestedBooks.contains(book)) {
-                changed = book.getAuthors().add(authorModel);
+                changed = book.getAuthors().add(authorEntity);
             } else {
-                changed = book.getAuthors().remove(authorModel);
+                changed = book.getAuthors().remove(authorEntity);
             }
             if (changed) {
                 book.setUpdated(now);
             }
         }
-        return authorModel;
+        return authorEntity;
     }
 
     @Transactional

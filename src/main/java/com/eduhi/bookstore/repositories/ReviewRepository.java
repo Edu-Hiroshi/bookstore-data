@@ -1,9 +1,9 @@
 package com.eduhi.bookstore.repositories;
 
-import com.eduhi.bookstore.models.ReviewModel;
+import com.eduhi.bookstore.models.ReviewEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface ReviewRepository extends JpaRepository<ReviewModel, UUID> {
+public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
 }

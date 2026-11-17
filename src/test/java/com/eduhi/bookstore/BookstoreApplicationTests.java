@@ -3,10 +3,7 @@ package com.eduhi.bookstore;
 import com.eduhi.bookstore.dto.AuthorRecordDto;
 import com.eduhi.bookstore.dto.BookRecordDto;
 import com.eduhi.bookstore.dto.PublisherRecordDto;
-import com.eduhi.bookstore.models.AuthorModel;
-import com.eduhi.bookstore.models.BookModel;
-import com.eduhi.bookstore.models.PublisherModel;
-import com.eduhi.bookstore.models.ReviewModel;
+import com.eduhi.bookstore.models.*;
 import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
@@ -64,18 +61,18 @@ class BookstoreApplicationTests {
 	@Transactional
 	void associationUpdatesPersistAddedAndRemovedRelationships() throws Exception {
 		Instant now = Instant.now();
-		PublisherModel oldPublisher = savePublisher("Old publisher", now);
-		PublisherModel newPublisher = savePublisher("New publisher", now);
-		AuthorModel oldAuthor = saveAuthor("Old author", now);
-		AuthorModel newAuthor = saveAuthor("New author", now);
+		PublisherEntity oldPublisher = savePublisher("Old publisher", now);
+		PublisherEntity newPublisher = savePublisher("New publisher", now);
+		AuthorEntity oldAuthor = saveAuthor("Old author", now);
+		AuthorEntity newAuthor = saveAuthor("New author", now);
 
-		BookModel book = new BookModel();
+		BookEntity book = new BookEntity();
 		book.setTitle("Association test book");
 		book.setPublisher(oldPublisher);
 		book.setAuthors(Set.of(oldAuthor));
 		book.setCreated(now);
 		book.setUpdated(now);
-		ReviewModel review = new ReviewModel();
+		ReviewEntity review = new ReviewEntity();
 		review.setComment("Review");
 		review.setBook(book);
 		book.setReview(review);
@@ -91,13 +88,13 @@ class BookstoreApplicationTests {
 		entityManager.flush();
 		entityManager.clear();
 
-		BookModel updatedBook = bookRepository.findById(book.getId()).orElseThrow();
+		BookEntity updatedBook = bookRepository.findById(book.getId()).orElseThrow();
 
 		assertEquals(newPublisher.getId(),
                      updatedBook.getPublisher().getId());
 		assertEquals(Set.of(newAuthor.getId()),
 				     updatedBook.getAuthors()
-                             .stream().map(AuthorModel::getId).collect(java.util.stream.Collectors.toSet()));
+                             .stream().map(AuthorEntity::getId).collect(java.util.stream.Collectors.toSet()));
 
 		authorService.updateAuthor(
                 newAuthor.getId(),
@@ -110,7 +107,7 @@ class BookstoreApplicationTests {
 		entityManager.flush();
 		entityManager.clear();
 
-        BookModel detachedBook = bookRepository.findById(book.getId()).orElseThrow();
+        BookEntity detachedBook = bookRepository.findById(book.getId()).orElseThrow();
 
 		assertNull(detachedBook.getPublisher());
 		assertEquals(Set.of(),
@@ -131,16 +128,16 @@ class BookstoreApplicationTests {
 		assertTrue(publisherRepository.existsById(newPublisher.getId()));
 	}
 
-	private PublisherModel savePublisher(String name, Instant now) {
-		PublisherModel publisher = new PublisherModel();
+	private PublisherEntity savePublisher(String name, Instant now) {
+		PublisherEntity publisher = new PublisherEntity();
 		publisher.setName(name);
 		publisher.setCreated(now);
 		publisher.setUpdated(now);
 		return publisherRepository.save(publisher);
 	}
 
-	private AuthorModel saveAuthor(String name, Instant now) {
-		AuthorModel author = new AuthorModel();
+	private AuthorEntity saveAuthor(String name, Instant now) {
+		AuthorEntity author = new AuthorEntity();
 		author.setName(name);
 		author.setCreated(now);
 		author.setUpdated(now);

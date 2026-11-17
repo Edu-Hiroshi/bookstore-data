@@ -2,7 +2,7 @@ package com.eduhi.bookstore.controller;
 
 import com.eduhi.bookstore.dto.PublisherRecordDto;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.PublisherModel;
+import com.eduhi.bookstore.models.PublisherEntity;
 import com.eduhi.bookstore.services.PublisherService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,21 +23,21 @@ public class PublisherController {
     }
 
     @PostMapping
-    public ResponseEntity<PublisherModel> savePublisher (@RequestBody @Valid PublisherRecordDto publisherRecordDto) {
+    public ResponseEntity<PublisherEntity> savePublisher (@RequestBody @Valid PublisherRecordDto publisherRecordDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(publisherService.savePublisher(publisherRecordDto));
     }
 
     @GetMapping
-    public ResponseEntity<List<PublisherModel>> getAllPublishers() {
+    public ResponseEntity<List<PublisherEntity>> getAllPublishers() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(publisherService.getAllPublishers());
     }
 
     @GetMapping("/")
-    public ResponseEntity<PublisherModel> getPublisherById(@RequestParam(value = "publisher-id") UUID id) throws NotFoundException {
+    public ResponseEntity<PublisherEntity> getPublisherById(@RequestParam(value = "publisher-id") UUID id) throws NotFoundException {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(publisherService.getPublisherById(id));

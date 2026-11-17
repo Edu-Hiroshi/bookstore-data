@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_REVIEW")
-public class ReviewModel implements Serializable {
+public class ReviewEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -21,7 +21,7 @@ public class ReviewModel implements Serializable {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @OneToOne
     @JoinColumn(name = "book_id")
-    private BookModel book;
+    private BookEntity book;
 
 
     public UUID getId() {
@@ -40,11 +40,11 @@ public class ReviewModel implements Serializable {
         this.comment = comment;
     }
 
-    public BookModel getBook() {
+    public BookEntity getBook() {
         return book;
     }
 
-    public void setBook(BookModel book) {
+    public void setBook(BookEntity book) {
         this.book = book;
     }
 }

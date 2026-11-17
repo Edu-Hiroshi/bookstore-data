@@ -2,7 +2,7 @@ package com.eduhi.bookstore.controller;
 
 import com.eduhi.bookstore.dto.AuthorRecordDto;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.AuthorModel;
+import com.eduhi.bookstore.models.AuthorEntity;
 import com.eduhi.bookstore.services.AuthorService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,21 +23,21 @@ public class AuthorController {
     }
 
     @PostMapping
-    public ResponseEntity<AuthorModel> saveAuthor (@RequestBody @Valid AuthorRecordDto authorRecordDto) {
+    public ResponseEntity<AuthorEntity> saveAuthor (@RequestBody @Valid AuthorRecordDto authorRecordDto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(authorService.saveAuthor(authorRecordDto));
     }
 
     @GetMapping
-    public ResponseEntity<List<AuthorModel>> getAllAuthors() {
+    public ResponseEntity<List<AuthorEntity>> getAllAuthors() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(authorService.getAllAuthors());
     }
 
     @GetMapping("/")
-    public ResponseEntity<AuthorModel> getAuthorById(@RequestParam(value = "author-id") UUID id) throws NotFoundException {
+    public ResponseEntity<AuthorEntity> getAuthorById(@RequestParam(value = "author-id") UUID id) throws NotFoundException {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(authorService.getAuthorById(id));

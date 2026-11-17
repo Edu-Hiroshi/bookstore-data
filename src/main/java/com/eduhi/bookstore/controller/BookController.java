@@ -3,7 +3,7 @@ package com.eduhi.bookstore.controller;
 import com.eduhi.bookstore.dto.BookRecordDto;
 import com.eduhi.bookstore.dto.BooksProjection;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.BookModel;
+import com.eduhi.bookstore.models.BookEntity;
 import com.eduhi.bookstore.services.BookService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -25,28 +25,28 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookModel> saveBook (@RequestBody @Valid BookRecordDto bookRecordDto) throws NotFoundException {
+    public ResponseEntity<BookEntity> saveBook (@RequestBody @Valid BookRecordDto bookRecordDto) throws NotFoundException {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(bookService.saveBook(bookRecordDto));
     }
 
     @GetMapping("/")
-    public ResponseEntity<BookModel> getBookById(@RequestParam(value = "book-id") UUID id) throws NotFoundException {
+    public ResponseEntity<BookEntity> getBookById(@RequestParam(value = "book-id") UUID id) throws NotFoundException {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.getBookById(id));
     }
 
     @GetMapping("/publisher_id/{id}")
-    public ResponseEntity<List<BookModel>> findBooksByPublisherId(@PathVariable UUID id) {
+    public ResponseEntity<List<BookEntity>> findBooksByPublisherId(@PathVariable UUID id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.findBooksByPublisherId(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<BookModel>> getAllBooks() {
+    public ResponseEntity<List<BookEntity>> getAllBooks() {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.getAllBooks());

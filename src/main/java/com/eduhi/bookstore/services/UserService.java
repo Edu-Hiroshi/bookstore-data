@@ -1,7 +1,7 @@
 package com.eduhi.bookstore.services;
 
 import com.eduhi.bookstore.dto.UserRecordDto;
-import com.eduhi.bookstore.models.UserModel;
+import com.eduhi.bookstore.models.UserEntity;
 import com.eduhi.bookstore.producers.UserProducer;
 import com.eduhi.bookstore.repositories.UserRepository;
 import jakarta.transaction.Transactional;
@@ -21,9 +21,9 @@ public class UserService {
     }
 
     @Transactional
-    public UserModel save(UserRecordDto userRecordDto) {
+    public UserEntity save(UserRecordDto userRecordDto) {
         Instant now = Instant.now();
-        var userModel = new UserModel();
+        var userModel = new UserEntity();
 
         userModel.setEmail(userRecordDto.email());
         userModel.setName(userRecordDto.name());

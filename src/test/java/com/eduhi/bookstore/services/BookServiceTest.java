@@ -2,9 +2,9 @@ package com.eduhi.bookstore.services;
 
 import com.eduhi.bookstore.dto.BookRecordDto;
 import com.eduhi.bookstore.exception.NotFoundException;
-import com.eduhi.bookstore.models.AuthorModel;
-import com.eduhi.bookstore.models.BookModel;
-import com.eduhi.bookstore.models.PublisherModel;
+import com.eduhi.bookstore.models.AuthorEntity;
+import com.eduhi.bookstore.models.BookEntity;
+import com.eduhi.bookstore.models.PublisherEntity;
 import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
@@ -51,8 +51,8 @@ class BookServiceTest {
         UUID publisherId = UUID.randomUUID();
         UUID authorId = UUID.randomUUID();
 
-        PublisherModel publisher = new PublisherModel();
-        AuthorModel author = new AuthorModel();
+        PublisherEntity publisher = new PublisherEntity();
+        AuthorEntity author = new AuthorEntity();
         BookRecordDto record = new BookRecordDto(
                 "A book",
                 publisherId,
@@ -63,10 +63,10 @@ class BookServiceTest {
                 .thenReturn(Optional.of(publisher));
         when(authorRepository.findAllById(record.authorIds()))
                 .thenReturn(List.of(author));
-        when(bookRepository.save(any(BookModel.class)))
+        when(bookRepository.save(any(BookEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        BookModel savedBook = bookService.saveBook(record);
+        BookEntity savedBook = bookService.saveBook(record);
 
         assertEquals("A book", savedBook.getTitle());
         assertSame(publisher, savedBook.getPublisher());
@@ -104,7 +104,7 @@ class BookServiceTest {
     @DisplayName("Find books by publisher Id")
     void findBooksByPublisherIdReturnsResults() {
         UUID publisherId = UUID.randomUUID();
-        List<BookModel> books = List.of(new BookModel(), new BookModel());
+        List<BookEntity> books = List.of(new BookEntity(), new BookEntity());
         when(bookRepository.findBooksByPublisherId(publisherId))
                 .thenReturn(books);
 
@@ -117,7 +117,7 @@ class BookServiceTest {
     @DisplayName("Get book by Id")
     void getBookByIdReturnsBookWhenFound() throws NotFoundException {
         UUID bookId = UUID.randomUUID();
-        BookModel book = new BookModel();
+        BookEntity book = new BookEntity();
         when(bookRepository.findById(bookId))
                 .thenReturn(Optional.of(book));
 
@@ -143,7 +143,7 @@ class BookServiceTest {
     @Test
     @DisplayName("Get all books")
     void getAllBooksReturnsRepositoryResults() {
-        List<BookModel> books = List.of(new BookModel(), new BookModel());
+        List<BookEntity> books = List.of(new BookEntity(), new BookEntity());
         when(bookRepository.findAll())
                 .thenReturn(books);
 
@@ -156,17 +156,17 @@ class BookServiceTest {
     @DisplayName("Updates book and associated publisher & author")
     void updateBookUpdatesAssociations() throws NotFoundException {
         UUID publisherId = UUID.randomUUID();
-        PublisherModel publisher = new PublisherModel();
+        PublisherEntity publisher = new PublisherEntity();
         publisher.setId(publisherId);
 
-        PublisherModel previousPublisher = new PublisherModel();
+        PublisherEntity previousPublisher = new PublisherEntity();
         previousPublisher.setId(UUID.randomUUID());
 
-        AuthorModel firstAuthor = new AuthorModel();
-        AuthorModel secondAuthor = new AuthorModel();
-        AuthorModel previousAuthor = new AuthorModel();
+        AuthorEntity firstAuthor = new AuthorEntity();
+        AuthorEntity secondAuthor = new AuthorEntity();
+        AuthorEntity previousAuthor = new AuthorEntity();
 
-        BookModel book = new BookModel();
+        BookEntity book = new BookEntity();
         book.setId(UUID.randomUUID());
         book.setTitle("Old title");
         book.setPublisher(previousPublisher);
@@ -191,7 +191,7 @@ class BookServiceTest {
         when(bookRepository.findById(book.getId()))
                 .thenReturn(Optional.of(book));
 
-        BookModel updatedBook = bookService.updateBook(book.getId(), record);
+        BookEntity updatedBook = bookService.updateBook(book.getId(), record);
 
         assertSame(book, updatedBook);
         assertEquals("New title", book.getTitle());
@@ -208,16 +208,16 @@ class BookServiceTest {
         assertTrue(previousPublisher.getBooks().isEmpty());
 
         verify(bookRepository).findById(book.getId());
-        verify(authorRepository, never()).save(any(AuthorModel.class));
-        verify(publisherRepository, never()).save(any(PublisherModel.class));
-        verify(bookRepository, never()).save(any(BookModel.class));
+        verify(authorRepository, never()).save(any(AuthorEntity.class));
+        verify(publisherRepository, never()).save(any(PublisherEntity.class));
+        verify(bookRepository, never()).save(any(BookEntity.class));
     }
 
     @Test
     @DisplayName("[Exception] Update book interrupted by error")
     void updateBookThrowsWhenPublisherDoesNotExistWithoutSaving() {
         UUID publisherId = UUID.randomUUID();
-        BookModel book = new BookModel();
+        BookEntity book = new BookEntity();
         UUID bookId = UUID.randomUUID();
         book.setId(bookId);
 
@@ -238,9 +238,9 @@ class BookServiceTest {
 
         assertEquals("Publisher not found.", exception.getMessage());
 
-        verify(authorRepository, never()).save(any(AuthorModel.class));
-        verify(publisherRepository, never()).save(any(PublisherModel.class));
-        verify(bookRepository, never()).save(any(BookModel.class));
+        verify(authorRepository, never()).save(any(AuthorEntity.class));
+        verify(publisherRepository, never()).save(any(PublisherEntity.class));
+        verify(bookRepository, never()).save(any(BookEntity.class));
     }
 
     @Test

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "TB_AUTHOR")
-public class AuthorModel implements Serializable {
+public class AuthorEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -23,7 +23,7 @@ public class AuthorModel implements Serializable {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToMany(mappedBy = "authors", fetch = FetchType.LAZY)
-    private Set<BookModel> books = new HashSet<>();
+    private Set<BookEntity> books = new HashSet<>();
 
     @Column(updatable = false, nullable = false)
     private Instant created;
@@ -31,10 +31,10 @@ public class AuthorModel implements Serializable {
     @Column(nullable = false)
     private Instant updated;
 
-    public AuthorModel() {
+    public AuthorEntity() {
     }
 
-    public AuthorModel(UUID id, String name, Set<BookModel> books, Instant created, Instant updated) {
+    public AuthorEntity(UUID id, String name, Set<BookEntity> books, Instant created, Instant updated) {
         this.id = id;
         this.name = name;
         this.books = books;
@@ -58,11 +58,11 @@ public class AuthorModel implements Serializable {
         this.name = name;
     }
 
-    public Set<BookModel> getBooks() {
+    public Set<BookEntity> getBooks() {
         return books;
     }
 
-    public void setBooks(Set<BookModel> books) {
+    public void setBooks(Set<BookEntity> books) {
         this.books = books;
     }
 

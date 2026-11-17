@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table (name = "TB_BOOK")
-public class BookModel implements Serializable{
+public class BookEntity implements Serializable{
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -22,7 +22,7 @@ public class BookModel implements Serializable{
 
     @ManyToOne
     @JoinColumn(name = "publisher_id")
-    private PublisherModel publisher;
+    private PublisherEntity publisher;
 
     // join table to simulate a table with OneToMany relationship on both sides with
     // the ids as foreign keys
@@ -32,10 +32,10 @@ public class BookModel implements Serializable{
             joinColumns = @JoinColumn(name = "book_id"),
             inverseJoinColumns = @JoinColumn(name = "author_id")
     )
-    private Set<AuthorModel> authors = new HashSet<>();
+    private Set<AuthorEntity> authors = new HashSet<>();
 
     @OneToOne(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ReviewModel review;
+    private ReviewEntity review;
 
     @Column(updatable = false, nullable = false)
     private Instant created;
@@ -60,27 +60,27 @@ public class BookModel implements Serializable{
         this.title = title;
     }
 
-    public PublisherModel getPublisher() {
+    public PublisherEntity getPublisher() {
         return publisher;
     }
 
-    public void setPublisher(PublisherModel publisher) {
+    public void setPublisher(PublisherEntity publisher) {
         this.publisher = publisher;
     }
 
-    public Set<AuthorModel> getAuthors() {
+    public Set<AuthorEntity> getAuthors() {
         return authors;
     }
 
-    public void setAuthors(Set<AuthorModel> authors) {
+    public void setAuthors(Set<AuthorEntity> authors) {
         this.authors = authors;
     }
 
-    public ReviewModel getReview() {
+    public ReviewEntity getReview() {
         return review;
     }
 
-    public void setReview(ReviewModel review) {
+    public void setReview(ReviewEntity review) {
         this.review = review;
     }
 
@@ -103,8 +103,8 @@ public class BookModel implements Serializable{
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        BookModel bookModel = (BookModel) o;
-        return Objects.equals(id, bookModel.id);
+        BookEntity bookEntity = (BookEntity) o;
+        return Objects.equals(id, bookEntity.id);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class BookModel implements Serializable{
 
     @Override
     public String toString() {
-        return "BookModel{" +
+        return "BookEntity{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", publisher=" + publisher +

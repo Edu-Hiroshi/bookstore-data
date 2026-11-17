@@ -1,7 +1,7 @@
 package com.eduhi.bookstore.repositories;
 
 import com.eduhi.bookstore.dto.BooksProjection;
-import com.eduhi.bookstore.models.BookModel;
+import com.eduhi.bookstore.models.BookEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,13 +12,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.UUID;
 
-public interface BookRepository extends JpaRepository<BookModel, UUID> {
+public interface BookRepository extends JpaRepository<BookEntity, UUID> {
 
-    BookModel findBookModelByTitle(String title);
+    BookEntity findBookModelByTitle(String title);
 
     // example where you can create custom queries with nativeQuery
     @Query(value = "SELECT * FROM tb_book WHERE publisher_id = :id", nativeQuery = true)
-    List<BookModel> findBooksByPublisherId(@Param("id") UUID id);
+    List<BookEntity> findBooksByPublisherId(@Param("id") UUID id);
 
     @NativeQuery(value = """
             SELECT b.id              AS id,
