@@ -6,6 +6,7 @@ import com.eduhi.bookstore.exception.NotFoundException;
 import com.eduhi.bookstore.models.BookModel;
 import com.eduhi.bookstore.services.BookService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,14 @@ public class BookController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(bookService.getAllBooksWithPublisherAndAuthors());
+    }
+
+    @GetMapping("/page/{page}/size/{size}")
+    public ResponseEntity<Page<BooksProjection>> getAllBooksWithPublisherPage(@PathVariable Integer page,
+                                                                              @PathVariable Integer size) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(bookService.getAllBooksWithPublisherAndAuthorsPage(page, size));
     }
 
     @PutMapping(value = "/{id}")

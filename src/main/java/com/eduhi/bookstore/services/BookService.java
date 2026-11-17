@@ -11,6 +11,8 @@ import com.eduhi.bookstore.repositories.AuthorRepository;
 import com.eduhi.bookstore.repositories.BookRepository;
 import com.eduhi.bookstore.repositories.PublisherRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -73,6 +75,10 @@ public class BookService {
 
     public List<BooksProjection> getAllBooksWithPublisherAndAuthors() {
         return bookRepository.getAllBooksWithPublisherAndAuthors();
+    }
+
+    public Page<BooksProjection> getAllBooksWithPublisherAndAuthorsPage(Integer page, Integer size) {
+        return bookRepository.getAllBooksWithPublisherAndAuthorsPage(PageRequest.of(page, size));
     }
 
     // Updates the publisher and author relationships.
