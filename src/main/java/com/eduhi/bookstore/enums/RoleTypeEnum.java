@@ -1,7 +1,7 @@
 package com.eduhi.bookstore.enums;
 
 public enum RoleTypeEnum {
-    STUDENT,
-    CUSTOMER,
-    ADMIN
+    ROLE_STUDENT,
+    ROLE_CUSTOMER,
+    ROLE_ADMIN
 }
