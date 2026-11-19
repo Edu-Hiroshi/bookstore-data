@@ -55,7 +55,7 @@ public class TokenProvider {
     }
 
     // in this case, the email (unique identifier for each user)
-    private String getUsername(String token) {
+    public String getUsername(String token) {
         return getClaims(token).getSubject();
     }
 
