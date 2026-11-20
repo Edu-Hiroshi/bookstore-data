@@ -20,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
@@ -34,7 +36,11 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
 
-    public AuthenticationService(UserRepository userRepository, RolesRepository rolesRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenProvider tokenProvider) {
+    public AuthenticationService(UserRepository userRepository,
+                                 RolesRepository rolesRepository,
+                                 PasswordEncoder passwordEncoder,
+                                 AuthenticationManager authenticationManager,
+                                 TokenProvider tokenProvider) {
         this.userRepository = userRepository;
         this.rolesRepository = rolesRepository;
         this.passwordEncoder = passwordEncoder;
@@ -51,20 +57,12 @@ public class AuthenticationService {
             throw new BadRequestException("User already registered.");
         }
 
-        RolesEntity role = rolesRepository.findByRoleName(RoleTypeEnum.ROLE_STUDENT.name())
-                .orElseGet(() -> {
-                    var newRole = new RolesEntity();
-                    newRole.setRoleName(RoleTypeEnum.ROLE_STUDENT.name());
-                    rolesRepository.save(newRole);
-                    return newRole;
-                });
-
         Instant now = Instant.now();
         var userModel = new UserEntity();
 
         userModel.setEmail(dto.email());
         userModel.setName(dto.name());
-        userModel.setRoles(Set.of(role));
+        userModel.setRoles(selectRoles(dto.roles()));
         userModel.setPassword(passwordEncoder.encode(dto.password()));
         userModel.setCreated(now);
         userModel.setUpdated(now);
@@ -76,14 +74,37 @@ public class AuthenticationService {
             // Auth manager calls auth provider, in turn it will call UserDetailService
             // to find the user, matching the password with the encoded password.
             Authentication authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(dto.email(),
-                                                                          dto.password()));
+                    .authenticate(new UsernamePasswordAuthenticationToken(
+                            dto.email(),
+                            dto.password()));
             String token = tokenProvider.generateToken(authentication);
-
             return new TokenResponseDto(token, expirationTime);
         } catch (BadCredentialsException e) {
             throw new BadRequestException("Invalid credentials.");
         }
     }
 
+    private Set<RolesEntity> selectRoles(Set<String> roles) throws BadRequestException {
+        HashSet<RolesEntity> roleSet = new HashSet<>();
+
+        for (String roleName : roles) {
+            String selectedRole;
+
+            try {
+                selectedRole = RoleTypeEnum.findByName(roleName).toString();
+            } catch (NoSuchElementException e) {
+                throw new BadRequestException("Role type not found.");
+            }
+
+            roleSet.add(rolesRepository.findByRoleName(selectedRole)
+                    .orElseGet(() -> {
+                        var newRole = new RolesEntity();
+                        newRole.setRoleName(selectedRole);
+                        rolesRepository.save(newRole);
+                        return newRole;
+                    }));
+        }
+
+        return roleSet;
+    }
 }
